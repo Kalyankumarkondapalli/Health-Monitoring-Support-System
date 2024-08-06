@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Health Test Inputs</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+  }
+  form {
+    width: 30%;
+    margin: 0 auto;
+    padding: 20px;
+    border: 1px solid #ccc;
+    border-radius: 10px;
+    background-color: #f9f9f9;
+  }
+  fieldset {
+    margin-bottom: 15px;
+  }
+  label {
+    display: block;
+    margin-bottom: 5px;
+  }
+  input[type="number"], input[type="text"], textarea {
+    width: 100%;
+    padding: 8px;
+    margin-bottom: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+  }
+  input[type="submit"], button {
+    width: 48%;
+    padding: 10px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+  input[type="submit"] {
+    background-color: #4CAF50;
+    color: white;
+  }
+  button {
+    background-color: #2196F3;
+    color: white;
+  }
+  input[type="submit"]:hover, button:hover {
+    opacity: 0.8;
+  }
+</style>
+</head>
+<body>
+
+<h2 style="text-align: center;">Health Test Inputs</h2>
+
+<form id="health_tests_form" action="submit_test.php" method="POST">
+  <fieldset>
+    <legend>Blood Test</legend>
+    <label for="blood_units">Enter Blood Test Result (units):</label>
+    <input type="number" id="blood_units" name="blood_units" min="0" step="any" required>
+  </fieldset>
+  
+  <fieldset>
+    <legend>Urinalysis Test</legend>
+    <label for="urine_ph">Enter Urinalysis pH Level:</label>
+    <input type="number" id="urine_ph" name="urine_ph" min="0" max="14" step="any" required>
+  </fieldset>
+  
+  <fieldset>
+    <legend>ECG Test</legend>
+    <label for="ecg_wave">Monitor ECG Waveform (Straight/Abnormal):</label>
+    <input type="text" id="ecg_wave" name="ecg_wave" required>
+  </fieldset>
+  
+  <fieldset>
+    <legend>Cholesterol Test</legend>
+    <label for="cholesterol_level">Enter Cholesterol Level (mg/dL):</label>
+    <input type="number" id="cholesterol_level" name="cholesterol_level" min="0" step="any" required>
+  </fieldset>
+  
+  <fieldset>
+    <legend>UltraSound Test</legend>
+    <label for="ultrasound_analysis">Provide UltraSound Analysis:</label>
+    <textarea id="ultrasound_analysis" name="ultrasound_analysis" rows="4" cols="50" required></textarea>
+  </fieldset>
+  
+  <fieldset>
+    <legend>Blood Pressure Test</legend>
+    <label for="bp_reading">Enter Blood Pressure Reading (mmHg):</label>
+    <input type="text" id="bp_reading" name="bp_reading" required>
+  </fieldset>
+  
+  <div style="text-align: center;">
+    <input type="submit" value="Submit">
+    <button type="button" id="download_csv">Download CSV File</button>
+  </div>
+</form>
+
+<script>
+  document.getElementById('download_csv').addEventListener('click', function() {
+    // Create a CSV string from the form data
+    const formData = new FormData(document.getElementById('health_tests_form'));
+    const csvRows = [];
+    
+    // Add header row
+    csvRows.push(['Test Type', 'Result'].join(','));
+    
+    // Add form data
+    formData.forEach((value, key) => {
+      csvRows.push([key, value].join(','));
+    });
+    
+    // Create a Blob from the CSV string
+    const csvBlob = new Blob([csvRows.join('\n')], { type: 'text/csv' });
+    
+    // Create a download link and click it
+    const downloadLink = document.createElement('a');
+    downloadLink.href = URL.createObjectURL(csvBlob);
+    downloadLink.download = 'health_tests_data.csv';
+    downloadLink.click();
+  });
+</script>
+
+</body>
+</html>

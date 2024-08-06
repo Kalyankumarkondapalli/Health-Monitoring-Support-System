@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Health Test Analysis</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+  }
+  #chart-container {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+    width: 90%;
+    margin: 0 auto;
+    padding: 20px;
+  }
+  canvas {
+    max-width: 100%;
+  }
+</style>
+</head>
+<body>
+
+<h2 style="text-align: center;">Upload CSV and Analyze Data</h2>
+
+<input type="file" id="upload_csv" accept=".csv" style="display: block; margin: 20px auto;">
+<div id="chart-container">
+  <div>
+    <h3>Blood Test</h3>
+    <canvas id="bloodTestChart"></canvas>
+  </div>
+  <div>
+    <h3>Urinalysis Test</h3>
+    <canvas id="urinalysisTestChart"></canvas>
+  </div>
+  <div>
+    <h3>ECG Test</h3>
+    <canvas id="ecgTestChart"></canvas>
+  </div>
+  <div>
+    <h3>Cholesterol Test</h3>
+    <canvas id="cholesterolTestChart"></canvas>
+  </div>
+  <div>
+    <h3>Ultrasound Test</h3>
+    <canvas id="ultrasoundTestChart"></canvas>
+  </div>
+  <div>
+    <h3>Blood Pressure Test</h3>
+    <canvas id="bpTestChart"></canvas>
+  </div>
+</div>
+
+<script>
+document.getElementById('upload_csv').addEventListener('change', function(event) {
+  const file = event.target.files[0];
+  if (file) {
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      const text = e.target.result;
+      const data = parseCSV(text);
+      renderCharts(data);
+    };
+    reader.readAsText(file);
+  }
+});
+
+function parseCSV(text) {
+  const rows = text.split('\n');
+  const headers = rows[0].split(',');
+  const data = rows.slice(1).map(row => row.split(','));
+  return data.reduce((acc, row) => {
+    if (row[0]) {
+      if (!acc[row[0]]) acc[row[0]] = [];
+      acc[row[0]].push(row[1]);
+    }
+    return acc;
+  }, {});
+}
+
+function renderCharts(data) {
+  const limits = {
+    'blood_units': { limit: 10, type: 'number', label: 'Blood Test Result', diseases: 'Anemia, Blood Cancer, Hemophilia' },
+    'urine_ph': { limit: [7.35, 7.45], type: 'range', label: 'Urinalysis pH Level', diseases: 'Sugar (Diabetes), Kidney Problems' },
+    'ecg_wave': { limit: 'Straight', type: 'text', label: 'ECG Waveform', diseases: 'Death (Abnormal ECG)' },
+    'cholesterol_level': { limit: 200, type: 'number', label: 'Cholesterol Level', diseases: 'Heart Attack, Leg Pain' },
+    'ultrasound_analysis': { limit: 'Analysis', type: 'text', label: 'UltraSound Analysis', diseases: 'Detect Breast Cancer, Bone Joints to Crack' },
+    'bp_reading': { limit: '120/80', type: 'text', label: 'Blood Pressure Reading', diseases: 'Blindness, Memory Loss (Brain)' }
+  };
+
+  const ctxBloodTest = document.getElementById('bloodTestChart').getContext('2d');
+  const ctxUrinalysisTest = document.getElementById('urinalysisTestChart').getContext('2d');
+  const ctxEcgTest = document.getElementById('ecgTestChart').getContext('2d');
+  const ctxCholesterolTest = document.getElementById('cholesterolTestChart').getContext('2d');
+  const ctxUltrasoundTest = document.getElementById('ultrasoundTestChart').getContext('2d');
+  const ctxBpTest = document.getElementById('bpTestChart').getContext('2d');
+
+  const charts = {
+    bloodTest: { ctx: ctxBloodTest, key: 'blood_units', label: limits['blood_units'].label, data: data['blood_units'] || [], limit: limits['blood_units'].limit, type: limits['blood_units'].type },
+    urinalysisTest: { ctx: ctxUrinalysisTest, key: 'urine_ph', label: limits['urine_ph'].label, data: data['urine_ph'] || [], limit: limits['urine_ph'].limit, type: limits['urine_ph'].type },
+    ecgTest: { ctx: ctxEcgTest, key: 'ecg_wave', label: limits['ecg_wave'].label, data: data['ecg_wave'] || [], limit: limits['ecg_wave'].limit, type: limits['ecg_wave'].type },
+    cholesterolTest: { ctx: ctxCholesterolTest, key: 'cholesterol_level', label: limits['cholesterol_level'].label, data: data['cholesterol_level'] || [], limit: limits['cholesterol_level'].limit, type: limits['cholesterol_level'].type },
+    ultrasoundTest: { ctx: ctxUltrasoundTest, key: 'ultrasound_analysis', label: limits['ultrasound_analysis'].label, data: data['ultrasound_analysis'] || [], limit: limits['ultrasound_analysis'].limit, type: limits['ultrasound_analysis'].type },
+    bpTest: { ctx: ctxBpTest, key: 'bp_reading', label: limits['bp_reading'].label, data: data['bp_reading'] || [], limit: limits['bp_reading'].limit, type: limits['bp_reading'].type }
+  };
+
+  Object.keys(charts).forEach(chartKey => {
+    const chart = charts[chartKey];
+    const barColors = chart.data.map(value => {
+      switch(chart.key) {
+        case 'blood_units':
+          return parseFloat(value) >= chart.limit ? 'green' : 'red';
+        case 'urine_ph':
+          const [min, max] = chart.limit;
+          const numValue = parseFloat(value);
+          return (numValue >= min && numValue <= max) ? 'green' : 'red';
+        case 'ecg_wave':
+          return value === chart.limit ? 'skyblue' : 'red';
+        case 'cholesterol_level':
+          return parseFloat(value) > chart.limit ? 'red' : 'green';
+        case 'ultrasound_analysis':
+          return 'skyblue';
+        case 'bp_reading':
+          const [sys, dia] = value.split('/').map(Number);
+          if (sys === 120 && dia === 80) {
+            return 'green';
+          } else if (sys > 120 || dia > 80) {
+            return 'red';
+          } else {
+            return 'skyblue';
+          }
+        default:
+          return 'blue';
+      }
+    });
+
+    new Chart(chart.ctx, {
+      type: 'bar',
+      data: {
+        labels: chart.data.map((_, index) => `Test ${index + 1}`),
+        datasets: [{
+          label: chart.label,
+          data: chart.data,
+          backgroundColor: barColors
+        }]
+      },
+      options: {
+        scales: {
+          y: {
+            beginAtZero: true
+          }
+        }
+      }
+    });
+  });
+}
+</script>
+
+</body>
+</html>
