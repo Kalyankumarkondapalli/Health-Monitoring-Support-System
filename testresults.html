@@ -1,8 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Health Test Inputs</title>
 <style>
   body {
@@ -99,22 +96,13 @@
 
 <script>
   document.getElementById('download_csv').addEventListener('click', function() {
-    // Create a CSV string from the form data
     const formData = new FormData(document.getElementById('health_tests_form'));
     const csvRows = [];
-    
-    // Add header row
     csvRows.push(['Test Type', 'Result'].join(','));
-    
-    // Add form data
     formData.forEach((value, key) => {
       csvRows.push([key, value].join(','));
     });
-    
-    // Create a Blob from the CSV string
     const csvBlob = new Blob([csvRows.join('\n')], { type: 'text/csv' });
-    
-    // Create a download link and click it
     const downloadLink = document.createElement('a');
     downloadLink.href = URL.createObjectURL(csvBlob);
     downloadLink.download = 'health_tests_data.csv';
